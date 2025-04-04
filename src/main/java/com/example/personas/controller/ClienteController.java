@@ -2,11 +2,17 @@ package com.example.personas.controller;
 
 import com.example.personas.entity.Cliente;
 import com.example.personas.service.ClienteService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/clientes")
@@ -53,5 +59,29 @@ public class ClienteController {
     public ResponseEntity<Void> delete(@PathVariable String clienteId) {
         clienteService.deleteCliente(clienteId);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Manejo de excepciones específicas de ResponseStatusException
+     * lanzadas dentro de ESTE controlador.
+     *
+     * Si prefieres no exponer el stack trace y deseas
+     * mostrar un JSON más limpio (fecha, mensaje, ruta, etc.),
+     * puedes construirlo a mano en este método.
+     */
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleResponseStatusException(
+            ResponseStatusException ex,
+            HttpServletRequest request
+    ) {
+        // Estructura de la respuesta
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", ex.getStatusCode().value());
+        body.put("error", ex.getStatusCode().toString());
+        body.put("message", ex.getReason());
+        body.put("path", request.getRequestURI());
+
+        return new ResponseEntity<>(body, ex.getStatusCode());
     }
 }

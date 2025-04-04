@@ -3,8 +3,10 @@ package com.example.personas.service.impl;
 import com.example.personas.entity.Cliente;
 import com.example.personas.repository.ClienteRepository;
 import com.example.personas.service.ClienteService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -20,19 +22,25 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     public Cliente createCliente(Cliente cliente) {
-        // Aquí podrías validar si existe ya un cliente con el mismo clienteId
+        // Validar si existe un cliente con el mismo clienteId
         if (clienteRepository.existsByClienteId(cliente.getClienteId())) {
-            throw new RuntimeException("Ya existe un cliente con el ID: " + cliente.getClienteId());
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Ya existe el cliente con ID: " + cliente.getClienteId()
+            );
         }
         // Guardamos
         return clienteRepository.save(cliente);
     }
 
+    @Override
     public Cliente getClienteById(String clienteId) {
         return clienteRepository.findByClienteId(clienteId)
-                .orElseThrow(() -> new RuntimeException("No existe el cliente con ID: " + clienteId));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No existe el cliente con ID: " + clienteId
+                ));
     }
-
 
     @Override
     public List<Cliente> getAllClientes() {
@@ -44,8 +52,7 @@ public class ClienteServiceImpl implements ClienteService {
         // Verificamos si existe el cliente a actualizar
         Cliente existente = getClienteById(clienteId);
 
-        // Asignamos nuevos valores al que ya existe:
-        // (puedes asignar todos o solo los que quieras permitir actualizar)
+        // Asignamos nuevos valores al que ya existe
         existente.setIdentificacion(cliente.getIdentificacion());
         existente.setHistorialFinanciero(cliente.getHistorialFinanciero());
         existente.setFechaInicioHistorial(cliente.getFechaInicioHistorial());
@@ -55,7 +62,7 @@ public class ClienteServiceImpl implements ClienteService {
         existente.setEdad(cliente.getEdad());
         existente.setDireccion(cliente.getDireccion());
         existente.setTelefono(cliente.getTelefono());
-        // Mantenemos el clienteId anterior (o sobrescribimos si quieres cambiarlo)
+        // Mantenemos o actualizamos el clienteId
         existente.setClienteId(clienteId);
 
         // Guardamos
@@ -66,7 +73,10 @@ public class ClienteServiceImpl implements ClienteService {
     @Transactional
     public void deleteCliente(String clienteId) {
         if (!clienteRepository.existsByClienteId(clienteId)) {
-            throw new RuntimeException("No existe el cliente con ID: " + clienteId);
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "No existe el cliente con ID: " + clienteId
+            );
         }
         clienteRepository.deleteByClienteId(clienteId);
     }
