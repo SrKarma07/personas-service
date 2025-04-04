@@ -5,6 +5,7 @@ import com.example.personas.service.PersonaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -54,5 +55,11 @@ public class PersonaController {
     public ResponseEntity<Void> delete(@PathVariable("id") String id) {
         personaService.deletePersona(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<String> handleResponseStatusException(ResponseStatusException ex) {
+        // Aquí puedes customizar la respuesta
+        return new ResponseEntity<>(ex.getReason(), ex.getStatusCode());
     }
 }
