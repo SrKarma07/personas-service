@@ -3,7 +3,9 @@ package com.example.personas.service.impl;
 import com.example.personas.entity.Asesor;
 import com.example.personas.repository.AsesorRepository;
 import com.example.personas.service.AsesorService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -18,9 +20,9 @@ public class AsesorServiceImpl implements AsesorService {
 
     @Override
     public Asesor createAsesor(Asesor asesor) {
-        // Verifica si existe ya un asesor con el mismo asesorId
+        // Verifica si ya existe un asesor con el mismo asesorId
         if (asesorRepository.existsByAsesorId(asesor.getAsesorId())) {
-            throw new RuntimeException("Ya existe un asesor con el ID: " + asesor.getAsesorId());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ya existe un asesor con el ID: " + asesor.getAsesorId());
         }
         // Guarda
         return asesorRepository.save(asesor);
@@ -29,7 +31,7 @@ public class AsesorServiceImpl implements AsesorService {
     @Override
     public Asesor getAsesorById(String asesorId) {
         return asesorRepository.findByAsesorId(asesorId)
-                .orElseThrow(() -> new RuntimeException("No existe el asesor con ID: " + asesorId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe el asesor con ID: " + asesorId));
     }
 
     @Override
@@ -42,15 +44,14 @@ public class AsesorServiceImpl implements AsesorService {
         // Verificamos si existe
         Asesor existente = getAsesorById(asesorId);
 
-        // Actualizamos campos (los que desees permitir)
+        // Actualizamos campos (los que se permitan actualizar)
         existente.setIdentificacion(asesor.getIdentificacion());
         existente.setNombre(asesor.getNombre());
         existente.setGenero(asesor.getGenero());
         existente.setEdad(asesor.getEdad());
         existente.setDireccion(asesor.getDireccion());
         existente.setTelefono(asesor.getTelefono());
-
-        existente.setAsesorId(asesorId); // Mantenemos el anterior (o lo sobreescribimos si quieres)
+        existente.setAsesorId(asesorId);
         existente.setEmail(asesor.getEmail());
         existente.setEstado(asesor.getEstado());
 
@@ -60,7 +61,7 @@ public class AsesorServiceImpl implements AsesorService {
     @Override
     public void deleteAsesor(String asesorId) {
         if (!asesorRepository.existsByAsesorId(asesorId)) {
-            throw new RuntimeException("No existe el asesor con ID: " + asesorId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe el asesor con ID: " + asesorId);
         }
         asesorRepository.deleteByAsesorId(asesorId);
     }
