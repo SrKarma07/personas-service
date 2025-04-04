@@ -61,14 +61,6 @@ public class ClienteController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Manejo de excepciones específicas de ResponseStatusException
-     * lanzadas dentro de ESTE controlador.
-     *
-     * Si prefieres no exponer el stack trace y deseas
-     * mostrar un JSON más limpio (fecha, mensaje, ruta, etc.),
-     * puedes construirlo a mano en este método.
-     */
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, Object>> handleResponseStatusException(
             ResponseStatusException ex,
